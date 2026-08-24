@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voting OSIS</title>
+
+<style>
+:root{
+  --primary:#2563eb;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --text:#1f2937;
+}
+
+*{
+  margin:0;
+  box-sizing:border-box;
+  font-family:"Segoe UI", sans-serif;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  padding:20px;
+}
+
+header{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+header h1{
+  font-size:20px;
+}
+
+header p{
+  color:#6b7280;
+  font-size:14px;
+}
+
+/* CAROUSEL */
+.carousel-wrapper{
+  position:relative;
+}
+
+.carousel{
+  display:flex;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  gap:16px;
+  padding:20px 10px;
+  scroll-behavior:smooth;
+}
+
+.carousel::-webkit-scrollbar{
+  display:none;
+}
+
+.card{
+  flex:0 0 70%;
+  max-width:300px;
+  background:var(--card);
+  border-radius:16px;
+  padding:14px;
+  scroll-snap-align:center;
+  transition:0.3s;
+  transform:scale(0.9);
+  opacity:0.6;
+  border:1px solid #e5e7eb;
+}
+
+.card.active{
+  transform:scale(1.05);
+  opacity:1;
+  border:2px solid var(--primary);
+  box-shadow:0 8px 20px rgba(0,0,0,0.12);
+}
+
+/* IMAGE */
+.card img{
+  width:100%;
+  height:150px;
+  object-fit:cover;
+  border-radius:12px;
+  margin-bottom:10px;
+  background:#ddd;
+}
+
+.card.active img{
+  height:170px;
+}
+
+/* TEXT */
+.card h3{
+  text-align:center;
+  margin-bottom:6px;
+}
+
+.card p{
+  font-size:13px;
+  text-align:center;
+  color:#555;
+}
+
+/* NAV BUTTON */
+.nav-btn{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  background:white;
+  border:none;
+  border-radius:50%;
+  width:36px;
+  height:36px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+}
+
+.nav-left{ left:0; }
+.nav-right{ right:0; }
+
+/* INDICATOR */
+.indicator{
+  text-align:center;
+  margin-top:10px;
+  font-size:14px;
+}
+
+/* SELECTED TEXT */
+.selected-text{
+  text-align:center;
+  margin-top:10px;
+  font-weight:600;
+}
+
+/* BUTTON */
+.confirm{
+  width:100%;
+  margin-top:15px;
+  padding:14px;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  background:var(--primary);
+  color:white;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.4);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  width:90%;
+  max-width:320px;
+  text-align:center;
+}
+
+.modal button{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+}
+
+.btn-secondary{ background:#e5e7eb; }
+.btn-primary{ background:var(--primary); color:white; }
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>PEMILIHAN KETUA OSIS 2026</h1>
+<p>Gunakan hak pilihmu dengan bijak.</p>
+</header>
+
+<div class="carousel-wrapper">
+
+<button class="nav-btn nav-left" onclick="scrollLeft()">‹</button>
+
+<div id="carousel" class="carousel"></div>
+
+<button class="nav-btn nav-right" onclick="scrollRight()">›</button>
+
+</div>
+
+<div class="indicator" id="indicator"></div>
+<div class="selected-text" id="selectedText"></div>
+
+<button class="confirm" onclick="openModal()">KONFIRMASI PILIHAN</button>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3>Konfirmasi Pilihan</h3>
+    <p id="modalText"></p>
+    <button class="btn-secondary" onclick="closeModal()">KEMBALI</button>
+    <button class="btn-primary" onclick="submitVote()">YA, KONFIRMASI</button>
+  </div>
+</div>
+
+<script>
+
+// DATA
+const candidates = [
+  {id:1, chairman:"Nama Ketua 01", vice:"Nama Wakil 01", vision:"Visi singkat pasangan calon.", image:"assets/paslon-01.jpg"},
+  {id:2, chairman:"Nama Ketua 02", vice:"Nama Wakil 02", vision:"Visi singkat pasangan calon.", image:"assets/paslon-02.jpg"},
+  {id:3, chairman:"Nama Ketua 03", vice:"Nama Wakil 03", vision:"Visi singkat pasangan calon.", image:"assets/paslon-03.jpg"}
+];
+
+const carousel = document.getElementById("carousel");
+
+let activeIndex = 0;
+
+// RENDER
+candidates.forEach(c=>{
+  const el = document.createElement("div");
+  el.className="card";
+  el.innerHTML = `
+    <img src="${c.image}" onerror="this.src='https://via.placeholder.com/300x200'">
+    <h3>PASLON ${c.id}</h3>
+    <p><b>${c.chairman}</b> & ${c.vice}</p>
+    <p>${c.vision}</p>
+  `;
+  carousel.appendChild(el);
+});
+
+// DETECT ACTIVE
+function updateActive(){
+  const cards = document.querySelectorAll(".card");
+  let closest = 0;
+  let closestOffset = Infinity;
+
+  cards.forEach((card,i)=>{
+    const rect = card.getBoundingClientRect();
+    const center = window.innerWidth/2;
+    const offset = Math.abs(rect.left + rect.width/2 - center);
+
+    if(offset < closestOffset){
+      closestOffset = offset;
+      closest = i;
+    }
+  });
+
+  activeIndex = closest;
+
+  cards.forEach((c,i)=>{
+    c.classList.toggle("active", i===activeIndex);
+  });
+
+  document.getElementById("indicator").innerText =
+    `${activeIndex+1} / ${candidates.length}`;
+
+  document.getElementById("selectedText").innerText =
+    `PASLON ${activeIndex+1} TERPILIH`;
+}
+
+// SCROLL EVENT
+carousel.addEventListener("scroll", ()=>{
+  requestAnimationFrame(updateActive);
+});
+
+// INIT
+setTimeout(()=>{
+  updateActive();
+},100);
+
+// NAV BUTTON
+function scrollLeft(){
+  carousel.scrollBy({left:-300, behavior:"smooth"});
+}
+
+function scrollRight(){
+  carousel.scrollBy({left:300, behavior:"smooth"});
+}
+
+// MODAL
+function openModal(){
+  document.getElementById("modal").style.display="flex";
+  document.getElementById("modalText").innerText =
+    `Apakah kamu yakin memilih PASLON ${activeIndex+1}?`;
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+
+// SUBMIT
+function submitVote(){
+  let votes = JSON.parse(localStorage.getItem("osis_votes") || "[]");
+  votes.push(activeIndex+1);
+  localStorage.setItem("osis_votes", JSON.stringify(votes));
+
+  closeModal();
+  resetUI();
+}
+
+// RESET
+function resetUI(){
+  carousel.scrollTo({left:0, behavior:"smooth"});
+  setTimeout(()=>updateActive(),300);
+}
+
+</script>
+
+</body>
+</html>
