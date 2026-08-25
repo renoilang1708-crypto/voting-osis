@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Voting OSIS</title>
 
-<!-- SUPABASE JS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 :root{
   --primary:#2563eb;
   --bg:#f5f7fb;
@@ -25,7 +25,10 @@ body{
   padding:20px;
 }
 
-/* HEADER */
+/* =========================================================
+   HEADER
+========================================================= */
+
 header{
   text-align:center;
   margin-bottom:20px;
@@ -40,7 +43,10 @@ header p{
   color:#6b7280;
 }
 
-/* FULLSCREEN BUTTON */
+/* =========================================================
+   FULLSCREEN
+========================================================= */
+
 .full-btn{
   position:fixed;
   top:10px;
@@ -54,7 +60,10 @@ header p{
   z-index:100;
 }
 
-/* LOCK SCREEN */
+/* =========================================================
+   LOCK SCREEN
+========================================================= */
+
 .lock{
   position:fixed;
   inset:0;
@@ -76,7 +85,95 @@ header p{
   color:white;
 }
 
-/* CAROUSEL */
+/* =========================================================
+   VERIFICATION SCREEN
+========================================================= */
+
+.verification{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  z-index:800;
+}
+
+.verify-box{
+  width:100%;
+  max-width:380px;
+  background:white;
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.verify-box h2{
+  text-align:center;
+  margin-bottom:8px;
+}
+
+.verify-box p{
+  text-align:center;
+  color:#6b7280;
+  font-size:13px;
+  margin-bottom:22px;
+}
+
+.form-group{
+  margin-bottom:15px;
+}
+
+.form-group label{
+  display:block;
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+.form-group input,
+.form-group select{
+  width:100%;
+  padding:13px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  font-size:14px;
+  outline:none;
+}
+
+.form-group input:focus,
+.form-group select:focus{
+  border-color:var(--primary);
+}
+
+.verify-button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:var(--primary);
+  color:white;
+  font-size:15px;
+  font-weight:600;
+}
+
+.verify-button:disabled{
+  opacity:.6;
+}
+
+/* =========================================================
+   VOTING AREA
+========================================================= */
+
+#votingArea{
+  display:none;
+}
+
+/* =========================================================
+   CAROUSEL
+========================================================= */
+
 .carousel{
   display:flex;
   overflow-x:auto;
@@ -157,7 +254,10 @@ header p{
   opacity:.6;
 }
 
-/* MODAL */
+/* =========================================================
+   MODAL
+========================================================= */
+
 .modal{
   position:fixed;
   inset:0;
@@ -198,7 +298,10 @@ header p{
   opacity:.6;
 }
 
-/* TOAST */
+/* =========================================================
+   TOAST
+========================================================= */
+
 .toast{
   position:fixed;
   top:20px;
@@ -233,41 +336,167 @@ header p{
   Fullscreen
 </button>
 
+
+<!-- =====================================================
+     FULLSCREEN LOCK
+===================================================== -->
+
 <div id="lock" class="lock">
+
   <h2>Mode Voting Aktif</h2>
-  <p>Silakan masuk fullscreen untuk melanjutkan</p>
+
+  <p>
+    Silakan masuk fullscreen untuk melanjutkan
+  </p>
 
   <button onclick="enterFullscreen()">
     Masuk Fullscreen
   </button>
+
 </div>
 
-<header>
-  <h1>PEMILIHAN KETUA OSIS 2026</h1>
-  <p>Gunakan hak pilihmu dengan bijak.</p>
-</header>
 
-<div id="carousel" class="carousel"></div>
+<!-- =====================================================
+     VERIFICATION
+===================================================== -->
 
-<div class="indicator" id="indicator"></div>
+<div id="verification" class="verification">
 
-<div class="selected" id="selectedText"></div>
+  <div class="verify-box">
 
-<button
-  id="confirmButton"
-  class="confirm"
-  onclick="openModal()"
+    <h2>Verifikasi Pemilih</h2>
+
+    <p>
+      Masukkan data diri sebelum menggunakan hak pilih.
+    </p>
+
+
+    <div class="form-group">
+
+      <label for="nameInput">
+        Nama Lengkap
+      </label>
+
+      <input
+        id="nameInput"
+        type="text"
+        placeholder="NAMA LENGKAP"
+        autocomplete="off"
+      >
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label for="roleInput">
+        Kelas / Jabatan
+      </label>
+
+      <select id="roleInput">
+
+        <option value="">
+          Pilih kelas / jabatan
+        </option>
+
+        <option value="X 1">X 1</option>
+        <option value="X 2">X 2</option>
+        <option value="X 3">X 3</option>
+
+        <option value="XI 1">XI 1</option>
+        <option value="XI 2">XI 2</option>
+        <option value="XI 3">XI 3</option>
+
+        <option value="XII 1">XII 1</option>
+        <option value="XII 2">XII 2</option>
+        <option value="XII 3">XII 3</option>
+
+        <option value="GURU">GURU</option>
+        <option value="TU">TU</option>
+        <option value="KEPALA SEKOLAH">
+          KEPALA SEKOLAH
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <button
+      id="verifyButton"
+      class="verify-button"
+      onclick="verifyVoter()"
+    >
+      VERIFIKASI
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     VOTING AREA
+===================================================== -->
+
+<div id="votingArea">
+
+  <header>
+
+    <h1>
+      PEMILIHAN KETUA OSIS 2026
+    </h1>
+
+    <p>
+      Gunakan hak pilihmu dengan bijak.
+    </p>
+
+  </header>
+
+
+  <div
+    id="carousel"
+    class="carousel"
+  ></div>
+
+
+  <div
+    class="indicator"
+    id="indicator"
+  ></div>
+
+
+  <div
+    class="selected"
+    id="selectedText"
+  ></div>
+
+
+  <button
+    id="confirmButton"
+    class="confirm"
+    onclick="openModal()"
+  >
+    KONFIRMASI PILIHAN
+  </button>
+
+</div>
+
+
+<!-- =====================================================
+     MODAL
+===================================================== -->
+
+<div
+  id="modal"
+  class="modal"
 >
-  KONFIRMASI PILIHAN
-</button>
-
-
-<!-- MODAL -->
-<div id="modal" class="modal">
 
   <div class="modal-content">
 
-    <h3>Konfirmasi Pilihan</h3>
+    <h3>
+      Konfirmasi Pilihan
+    </h3>
 
     <p id="modalText"></p>
 
@@ -292,8 +521,14 @@ header p{
 </div>
 
 
-<!-- TOAST -->
-<div id="toast" class="toast">
+<!-- =====================================================
+     TOAST
+===================================================== -->
+
+<div
+  id="toast"
+  class="toast"
+>
   ✓ Pilihan berhasil disimpan
 </div>
 
@@ -302,7 +537,7 @@ header p{
 
 /* =========================================================
    SUPABASE CONFIG
-   ========================================================= */
+========================================================= */
 
 const SUPABASE_URL =
   "https://cmaijcbefshdxjewxcyb.supabase.co";
@@ -311,20 +546,34 @@ const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_nTP29nUK8WCKNiDr7Jndug_gQEJs6kG";
 
 
-const supabaseClient = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let activeIndex = 0;
+
+let submitting = false;
+
+let verifiedVoterId = null;
 
 
 /* =========================================================
    HAPTIC
-   ========================================================= */
+========================================================= */
 
 function vibrate(ms=30){
 
   if(navigator.vibrate){
+
     navigator.vibrate(ms);
+
   }
 
 }
@@ -332,15 +581,21 @@ function vibrate(ms=30){
 
 /* =========================================================
    FULLSCREEN
-   ========================================================= */
+========================================================= */
 
 function enterFullscreen(){
 
   if(!document.fullscreenElement){
 
-    document.documentElement.requestFullscreen()
+    document.documentElement
+      .requestFullscreen()
       .catch(error=>{
-        console.log("Fullscreen gagal:",error);
+
+        console.log(
+          "Fullscreen gagal:",
+          error
+        );
+
       });
 
   }
@@ -354,11 +609,15 @@ document.addEventListener(
 
     if(!document.fullscreenElement){
 
-      document.getElementById("lock").style.display="flex";
+      document.getElementById(
+        "lock"
+      ).style.display="flex";
 
     }else{
 
-      document.getElementById("lock").style.display="none";
+      document.getElementById(
+        "lock"
+      ).style.display="none";
 
     }
 
@@ -366,7 +625,9 @@ document.addEventListener(
 );
 
 
-/* AUTO TRY FULLSCREEN */
+/* =========================================================
+   AUTO TRY FULLSCREEN
+========================================================= */
 
 setTimeout(()=>{
 
@@ -377,7 +638,7 @@ setTimeout(()=>{
 
 /* =========================================================
    DATA PASLON
-   ========================================================= */
+========================================================= */
 
 const candidates=[
 
@@ -408,21 +669,206 @@ const candidates=[
 ];
 
 
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
 const carousel =
-  document.getElementById("carousel");
+  document.getElementById(
+    "carousel"
+  );
 
-let activeIndex=0;
 
-let submitting=false;
+/* =========================================================
+   VERIFICATION
+========================================================= */
+
+async function verifyVoter(){
+
+  const nameInput =
+    document.getElementById(
+      "nameInput"
+    );
+
+  const roleInput =
+    document.getElementById(
+      "roleInput"
+    );
+
+  const verifyButton =
+    document.getElementById(
+      "verifyButton"
+    );
+
+
+  const name =
+    nameInput.value
+      .trim()
+      .replace(/\s+/g," ")
+      .toUpperCase();
+
+
+  const role =
+    roleInput.value;
+
+
+  /* =========================================
+     VALIDASI INPUT
+  ========================================= */
+
+  if(!name){
+
+    showToast(
+      "Masukkan nama lengkap.",
+      true
+    );
+
+    nameInput.focus();
+
+    return;
+
+  }
+
+
+  if(!role){
+
+    showToast(
+      "Pilih kelas / jabatan.",
+      true
+    );
+
+    roleInput.focus();
+
+    return;
+
+  }
+
+
+  verifyButton.disabled=true;
+
+  verifyButton.innerText =
+    "MEMERIKSA...";
+
+
+  try{
+
+    /* =========================================
+       CARI VOTER
+    ========================================= */
+
+    const { data, error } =
+      await supabaseClient
+        .from("voters")
+        .select("id,name,role,has_voted")
+        .eq("name",name)
+        .eq("role",role)
+        .maybeSingle();
+
+
+    if(error){
+
+      console.error(
+        "Verification error:",
+        error
+      );
+
+      throw error;
+
+    }
+
+
+    /* =========================================
+       DATA TIDAK DITEMUKAN
+    ========================================= */
+
+    if(!data){
+
+      showToast(
+        "⚠ Data pemilih tidak ditemukan.",
+        true
+      );
+
+      return;
+
+    }
+
+
+    /* =========================================
+       SUDAH MEMILIH
+    ========================================= */
+
+    if(data.has_voted){
+
+      showToast(
+        "⚠ Kamu sudah menggunakan hak pilih.",
+        true
+      );
+
+      return;
+
+    }
+
+
+    /* =========================================
+       VERIFIKASI BERHASIL
+    ========================================= */
+
+    verifiedVoterId =
+      data.id;
+
+
+    document.getElementById(
+      "verification"
+    ).style.display="none";
+
+
+    document.getElementById(
+      "votingArea"
+    ).style.display="block";
+
+
+    vibrate([30,50,30]);
+
+
+    showToast(
+      "✓ Verifikasi berhasil."
+    );
+
+
+    updateActive();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      "⚠ Gagal memverifikasi. Periksa koneksi.",
+      true
+    );
+
+  }finally{
+
+    verifyButton.disabled=false;
+
+    verifyButton.innerText =
+      "VERIFIKASI";
+
+  }
+
+}
 
 
 /* =========================================================
    RENDER CARD
-   ========================================================= */
+========================================================= */
 
 candidates.forEach(c=>{
 
-  const el=document.createElement("div");
+  const el =
+    document.createElement(
+      "div"
+    );
 
   el.className="card";
 
@@ -452,12 +898,15 @@ candidates.forEach(c=>{
 
 /* =========================================================
    ACTIVE DETECT
-   ========================================================= */
+========================================================= */
 
 function updateActive(){
 
-  const cards=
-    document.querySelectorAll(".card");
+  const cards =
+    document.querySelectorAll(
+      ".card"
+    );
+
 
   let closest=0;
 
@@ -466,10 +915,11 @@ function updateActive(){
 
   cards.forEach((card,i)=>{
 
-    const rect=
+    const rect =
       card.getBoundingClientRect();
 
-    const offset=
+
+    const offset =
       Math.abs(
         rect.left +
         rect.width/2 -
@@ -501,11 +951,15 @@ function updateActive(){
   });
 
 
-  document.getElementById("indicator").innerText=
+  document.getElementById(
+    "indicator"
+  ).innerText =
     `${activeIndex+1} / ${candidates.length}`;
 
 
-  document.getElementById("selectedText").innerText=
+  document.getElementById(
+    "selectedText"
+  ).innerText =
     `PASLON ${activeIndex+1} TERPILIH`;
 
 }
@@ -513,19 +967,15 @@ function updateActive(){
 
 carousel.addEventListener(
   "scroll",
-  ()=>requestAnimationFrame(updateActive)
-);
-
-
-setTimeout(
-  updateActive,
-  100
+  ()=>requestAnimationFrame(
+    updateActive
+  )
 );
 
 
 /* =========================================================
    MODAL
-   ========================================================= */
+========================================================= */
 
 function openModal(){
 
@@ -533,9 +983,15 @@ function openModal(){
 
   vibrate(20);
 
-  document.getElementById("modal").style.display="flex";
 
-  document.getElementById("modalText").innerText=
+  document.getElementById(
+    "modal"
+  ).style.display="flex";
+
+
+  document.getElementById(
+    "modalText"
+  ).innerText =
     `Apakah kamu yakin memilih PASLON ${activeIndex+1}?`;
 
 }
@@ -545,65 +1001,92 @@ function closeModal(){
 
   if(submitting) return;
 
-  document.getElementById("modal").style.display="none";
+  document.getElementById(
+    "modal"
+  ).style.display="none";
 
 }
 
 
 /* =========================================================
    TOAST
-   ========================================================= */
+========================================================= */
 
 function showToast(
   message,
   isError=false
 ){
 
-  const t=
-    document.getElementById("toast");
+  const t =
+    document.getElementById(
+      "toast"
+    );
 
-  t.innerText=message;
+
+  t.innerText =
+    message;
+
 
   t.classList.toggle(
     "error",
     isError
   );
 
-  t.classList.add("show");
+
+  t.classList.add(
+    "show"
+  );
 
 
   setTimeout(()=>{
 
-    t.classList.remove("show");
+    t.classList.remove(
+      "show"
+    );
 
-  },2000);
+  },2500);
 
 }
 
 
 /* =========================================================
    SUBMIT VOTE
-   ========================================================= */
+========================================================= */
 
 async function submitVote(){
 
   if(submitting) return;
 
+  if(!verifiedVoterId){
+
+    showToast(
+      "⚠ Pemilih belum diverifikasi.",
+      true
+    );
+
+    return;
+
+  }
+
 
   submitting=true;
 
 
-  const submitButton=
-    document.getElementById("submitButton");
+  const submitButton =
+    document.getElementById(
+      "submitButton"
+    );
 
-  const cancelButton=
-    document.getElementById("cancelButton");
+  const cancelButton =
+    document.getElementById(
+      "cancelButton"
+    );
 
-  const confirmButton=
-    document.getElementById("confirmButton");
+  const confirmButton =
+    document.getElementById(
+      "confirmButton"
+    );
 
-
-  /* LOCK BUTTON */
 
   submitButton.disabled=true;
 
@@ -615,17 +1098,17 @@ async function submitVote(){
   vibrate([40,30,40]);
 
 
-  const candidateId=
+  const candidateId =
     activeIndex+1;
 
 
   try{
 
     /* =========================================
-       SEND TO SUPABASE
-       ========================================= */
+       1. SIMPAN SUARA
+    ========================================= */
 
-    const { error } =
+    const { error:voteError } =
       await supabaseClient
         .from("votes")
         .insert({
@@ -633,36 +1116,67 @@ async function submitVote(){
         });
 
 
-    /* =========================================
-       CHECK ERROR
-       ========================================= */
-
-    if(error){
+    if(voteError){
 
       console.error(
-        "Supabase error:",
-        error
+        "Vote error:",
+        voteError
       );
 
-      throw error;
+      throw voteError;
+
+    }
+
+
+    /* =========================================
+       2. TANDAI VOTER SUDAH MEMILIH
+    ========================================= */
+
+    const { error:updateError } =
+      await supabaseClient
+        .from("voters")
+        .update({
+          has_voted:true
+        })
+        .eq("id",verifiedVoterId)
+        .eq("has_voted",false);
+
+
+    if(updateError){
+
+      console.error(
+        "Voter update error:",
+        updateError
+      );
+
+      throw updateError;
 
     }
 
 
     /* =========================================
        SUCCESS
-       ========================================= */
+    ========================================= */
 
     closeModal();
+
 
     showToast(
       "✓ Pilihan berhasil disimpan"
     );
 
 
-    /* =========================================
-       RESET
-       ========================================= */
+    /*
+       Setelah berhasil,
+       jangan izinkan sesi ini
+       melakukan voting lagi.
+    */
+
+    verifiedVoterId=null;
+
+
+    confirmButton.disabled=true;
+
 
     setTimeout(()=>{
 
@@ -681,35 +1195,50 @@ async function submitVote(){
     console.error(error);
 
 
-    /* =========================================
-       FAILED
-       ========================================= */
-
     showToast(
       "⚠ Gagal menyimpan. Periksa koneksi lalu coba lagi.",
       true
     );
 
 
-    /* Modal tetap terbuka supaya
-       siswa bisa mencoba lagi */
+  }finally{
+
+    submitting=false;
+
+    submitButton.disabled=false;
+
+    cancelButton.disabled=false;
+
+
+    /*
+       Kalau voter sudah berhasil
+       ditandai, tombol tetap mati.
+    */
+
+    if(!verifiedVoterId){
+
+      confirmButton.disabled=true;
+
+    }else{
+
+      confirmButton.disabled=false;
+
+    }
 
   }
 
-
-  /* =========================================
-     UNLOCK UI
-     ========================================= */
-
-  submitting=false;
-
-  submitButton.disabled=false;
-
-  cancelButton.disabled=false;
-
-  confirmButton.disabled=false;
-
 }
+
+
+/* =========================================================
+   INITIAL ACTIVE
+========================================================= */
+
+setTimeout(()=>{
+
+  updateActive();
+
+},100);
 
 </script>
 
