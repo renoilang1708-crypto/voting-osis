@@ -5,13 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Voting OSIS</title>
 
+<!-- SUPABASE JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 :root{
   --primary:#2563eb;
   --bg:#f5f7fb;
 }
 
-*{margin:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif;}
+*{
+  margin:0;
+  box-sizing:border-box;
+  font-family:"Segoe UI",sans-serif;
+}
 
 body{
   background:var(--bg);
@@ -19,9 +26,19 @@ body{
 }
 
 /* HEADER */
-header{text-align:center;margin-bottom:20px;}
-header h1{font-size:20px;}
-header p{font-size:14px;color:#6b7280;}
+header{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+header h1{
+  font-size:20px;
+}
+
+header p{
+  font-size:14px;
+  color:#6b7280;
+}
 
 /* FULLSCREEN BUTTON */
 .full-btn{
@@ -67,7 +84,10 @@ header p{font-size:14px;color:#6b7280;}
   gap:16px;
   padding:20px 10px;
 }
-.carousel::-webkit-scrollbar{display:none;}
+
+.carousel::-webkit-scrollbar{
+  display:none;
+}
 
 .card{
   flex:0 0 70%;
@@ -95,13 +115,31 @@ header p{font-size:14px;color:#6b7280;}
   border-radius:12px;
 }
 
-.card.active img{height:170px;}
+.card.active img{
+  height:170px;
+}
 
-.card h3{text-align:center;margin:8px 0;}
-.card p{text-align:center;font-size:13px;color:#555;}
+.card h3{
+  text-align:center;
+  margin:8px 0;
+}
 
-.indicator{text-align:center;margin-top:10px;}
-.selected{text-align:center;margin-top:5px;font-weight:600;}
+.card p{
+  text-align:center;
+  font-size:13px;
+  color:#555;
+}
+
+.indicator{
+  text-align:center;
+  margin-top:10px;
+}
+
+.selected{
+  text-align:center;
+  margin-top:5px;
+  font-weight:600;
+}
 
 .confirm{
   width:100%;
@@ -111,6 +149,12 @@ header p{font-size:14px;color:#6b7280;}
   border-radius:10px;
   background:var(--primary);
   color:white;
+  font-size:15px;
+  font-weight:600;
+}
+
+.confirm:disabled{
+  opacity:.6;
 }
 
 /* MODAL */
@@ -121,6 +165,7 @@ header p{font-size:14px;color:#6b7280;}
   display:none;
   justify-content:center;
   align-items:center;
+  z-index:500;
 }
 
 .modal-content{
@@ -140,8 +185,18 @@ header p{font-size:14px;color:#6b7280;}
   border-radius:8px;
 }
 
-.btn-secondary{background:#e5e7eb;}
-.btn-primary{background:var(--primary);color:white;}
+.btn-secondary{
+  background:#e5e7eb;
+}
+
+.btn-primary{
+  background:var(--primary);
+  color:white;
+}
+
+.btn-primary:disabled{
+  opacity:.6;
+}
 
 /* TOAST */
 .toast{
@@ -155,6 +210,9 @@ header p{font-size:14px;color:#6b7280;}
   border-radius:12px;
   opacity:0;
   transition:.3s;
+  z-index:1000;
+  text-align:center;
+  max-width:90%;
 }
 
 .toast.show{
@@ -162,146 +220,495 @@ header p{font-size:14px;color:#6b7280;}
   transform:translateX(-50%) scale(1);
 }
 
+.toast.error{
+  background:#dc2626;
+}
+
 </style>
 </head>
 
 <body>
 
-<button class="full-btn" onclick="enterFullscreen()">Fullscreen</button>
+<button class="full-btn" onclick="enterFullscreen()">
+  Fullscreen
+</button>
 
 <div id="lock" class="lock">
   <h2>Mode Voting Aktif</h2>
   <p>Silakan masuk fullscreen untuk melanjutkan</p>
-  <button onclick="enterFullscreen()">Masuk Fullscreen</button>
+
+  <button onclick="enterFullscreen()">
+    Masuk Fullscreen
+  </button>
 </div>
 
 <header>
-<h1>PEMILIHAN KETUA OSIS 2026</h1>
-<p>Gunakan hak pilihmu dengan bijak.</p>
+  <h1>PEMILIHAN KETUA OSIS 2026</h1>
+  <p>Gunakan hak pilihmu dengan bijak.</p>
 </header>
 
 <div id="carousel" class="carousel"></div>
 
 <div class="indicator" id="indicator"></div>
+
 <div class="selected" id="selectedText"></div>
 
-<button class="confirm" onclick="openModal()">KONFIRMASI PILIHAN</button>
+<button
+  id="confirmButton"
+  class="confirm"
+  onclick="openModal()"
+>
+  KONFIRMASI PILIHAN
+</button>
+
 
 <!-- MODAL -->
 <div id="modal" class="modal">
+
   <div class="modal-content">
+
     <h3>Konfirmasi Pilihan</h3>
+
     <p id="modalText"></p>
-    <button class="btn-secondary" onclick="closeModal()">KEMBALI</button>
-    <button class="btn-primary" onclick="submitVote()">YA, KONFIRMASI</button>
+
+    <button
+      class="btn-secondary"
+      onclick="closeModal()"
+      id="cancelButton"
+    >
+      KEMBALI
+    </button>
+
+    <button
+      class="btn-primary"
+      onclick="submitVote()"
+      id="submitButton"
+    >
+      YA, KONFIRMASI
+    </button>
+
   </div>
+
 </div>
 
+
 <!-- TOAST -->
-<div id="toast" class="toast">✓ Pilihan berhasil disimpan</div>
+<div id="toast" class="toast">
+  ✓ Pilihan berhasil disimpan
+</div>
+
 
 <script>
 
-// HAPTIC
+/* =========================================================
+   SUPABASE CONFIG
+   ========================================================= */
+
+const SUPABASE_URL =
+  "https://cmaijcbefshdxjewxcyb.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_nTP29nUK8WCKNiDr7Jndug_gQEJs6kG";
+
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+
+/* =========================================================
+   HAPTIC
+   ========================================================= */
+
 function vibrate(ms=30){
-  if(navigator.vibrate) navigator.vibrate(ms);
-}
 
-// FULLSCREEN
-function enterFullscreen(){
-  document.documentElement.requestFullscreen();
-}
-
-document.addEventListener("fullscreenchange",()=>{
-  if(!document.fullscreenElement){
-    document.getElementById("lock").style.display="flex";
-  } else {
-    document.getElementById("lock").style.display="none";
+  if(navigator.vibrate){
+    navigator.vibrate(ms);
   }
-});
 
-// AUTO TRY FULLSCREEN
+}
+
+
+/* =========================================================
+   FULLSCREEN
+   ========================================================= */
+
+function enterFullscreen(){
+
+  if(!document.fullscreenElement){
+
+    document.documentElement.requestFullscreen()
+      .catch(error=>{
+        console.log("Fullscreen gagal:",error);
+      });
+
+  }
+
+}
+
+
+document.addEventListener(
+  "fullscreenchange",
+  ()=>{
+
+    if(!document.fullscreenElement){
+
+      document.getElementById("lock").style.display="flex";
+
+    }else{
+
+      document.getElementById("lock").style.display="none";
+
+    }
+
+  }
+);
+
+
+/* AUTO TRY FULLSCREEN */
+
 setTimeout(()=>{
+
   enterFullscreen();
+
 },500);
 
-// DATA
+
+/* =========================================================
+   DATA PASLON
+   ========================================================= */
+
 const candidates=[
-{id:1,chairman:"Nama Ketua 01",vice:"Nama Wakil 01",vision:"Visi singkat pasangan calon.",image:"assets/paslon-01.jpg"},
-{id:2,chairman:"Nama Ketua 02",vice:"Nama Wakil 02",vision:"Visi singkat pasangan calon.",image:"assets/paslon-02.jpg"},
-{id:3,chairman:"Nama Ketua 03",vice:"Nama Wakil 03",vision:"Visi singkat pasangan calon.",image:"assets/paslon-03.jpg"}
+
+  {
+    id:1,
+    chairman:"Nama Ketua 01",
+    vice:"Nama Wakil 01",
+    vision:"Visi singkat pasangan calon.",
+    image:"assets/paslon-01.jpg"
+  },
+
+  {
+    id:2,
+    chairman:"Nama Ketua 02",
+    vice:"Nama Wakil 02",
+    vision:"Visi singkat pasangan calon.",
+    image:"assets/paslon-02.jpg"
+  },
+
+  {
+    id:3,
+    chairman:"Nama Ketua 03",
+    vice:"Nama Wakil 03",
+    vision:"Visi singkat pasangan calon.",
+    image:"assets/paslon-03.jpg"
+  }
+
 ];
 
-const carousel=document.getElementById("carousel");
+
+const carousel =
+  document.getElementById("carousel");
+
 let activeIndex=0;
 
-// RENDER
+let submitting=false;
+
+
+/* =========================================================
+   RENDER CARD
+   ========================================================= */
+
 candidates.forEach(c=>{
+
   const el=document.createElement("div");
+
   el.className="card";
+
   el.innerHTML=`
-    <img src="${c.image}" onerror="this.src='https://via.placeholder.com/300x200'">
+
+    <img
+      src="${c.image}"
+      onerror="this.src='assets/placeholder.jpg'"
+    >
+
     <h3>PASLON ${c.id}</h3>
-    <p><b>${c.chairman}</b> & ${c.vice}</p>
-    <p>${c.vision}</p>
+
+    <p>
+      <b>${c.chairman}</b> & ${c.vice}
+    </p>
+
+    <p>
+      ${c.vision}
+    </p>
+
   `;
+
   carousel.appendChild(el);
+
 });
 
-// ACTIVE DETECT
+
+/* =========================================================
+   ACTIVE DETECT
+   ========================================================= */
+
 function updateActive(){
-  const cards=document.querySelectorAll(".card");
-  let closest=0,min=Infinity;
+
+  const cards=
+    document.querySelectorAll(".card");
+
+  let closest=0;
+
+  let min=Infinity;
+
 
   cards.forEach((card,i)=>{
-    const rect=card.getBoundingClientRect();
-    const offset=Math.abs(rect.left+rect.width/2-window.innerWidth/2);
-    if(offset<min){min=offset;closest=i;}
+
+    const rect=
+      card.getBoundingClientRect();
+
+    const offset=
+      Math.abs(
+        rect.left +
+        rect.width/2 -
+        window.innerWidth/2
+      );
+
+
+    if(offset<min){
+
+      min=offset;
+
+      closest=i;
+
+    }
+
   });
+
 
   activeIndex=closest;
 
-  cards.forEach((c,i)=>c.classList.toggle("active",i===activeIndex));
 
-  indicator.innerText=`${activeIndex+1} / ${candidates.length}`;
-  selectedText.innerText=`PASLON ${activeIndex+1} TERPILIH`;
+  cards.forEach((c,i)=>{
+
+    c.classList.toggle(
+      "active",
+      i===activeIndex
+    );
+
+  });
+
+
+  document.getElementById("indicator").innerText=
+    `${activeIndex+1} / ${candidates.length}`;
+
+
+  document.getElementById("selectedText").innerText=
+    `PASLON ${activeIndex+1} TERPILIH`;
+
 }
 
-carousel.addEventListener("scroll",()=>requestAnimationFrame(updateActive));
-setTimeout(updateActive,100);
 
-// MODAL
+carousel.addEventListener(
+  "scroll",
+  ()=>requestAnimationFrame(updateActive)
+);
+
+
+setTimeout(
+  updateActive,
+  100
+);
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
 function openModal(){
+
+  if(submitting) return;
+
   vibrate(20);
-  modal.style.display="flex";
-  modalText.innerText=`Apakah kamu yakin memilih PASLON ${activeIndex+1}?`;
+
+  document.getElementById("modal").style.display="flex";
+
+  document.getElementById("modalText").innerText=
+    `Apakah kamu yakin memilih PASLON ${activeIndex+1}?`;
+
 }
+
 
 function closeModal(){
-  modal.style.display="none";
+
+  if(submitting) return;
+
+  document.getElementById("modal").style.display="none";
+
 }
 
-// TOAST
-function showToast(){
-  const t=document.getElementById("toast");
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function showToast(
+  message,
+  isError=false
+){
+
+  const t=
+    document.getElementById("toast");
+
+  t.innerText=message;
+
+  t.classList.toggle(
+    "error",
+    isError
+  );
+
   t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"),1500);
-}
 
-// SUBMIT
-function submitVote(){
-  vibrate([40,30,40]);
-
-  let votes=JSON.parse(localStorage.getItem("osis_votes")||"[]");
-  votes.push(activeIndex+1);
-  localStorage.setItem("osis_votes",JSON.stringify(votes));
-
-  closeModal();
-  showToast();
 
   setTimeout(()=>{
-    carousel.scrollTo({left:0,behavior:"smooth"});
-  },1600);
+
+    t.classList.remove("show");
+
+  },2000);
+
+}
+
+
+/* =========================================================
+   SUBMIT VOTE
+   ========================================================= */
+
+async function submitVote(){
+
+  if(submitting) return;
+
+
+  submitting=true;
+
+
+  const submitButton=
+    document.getElementById("submitButton");
+
+  const cancelButton=
+    document.getElementById("cancelButton");
+
+  const confirmButton=
+    document.getElementById("confirmButton");
+
+
+  /* LOCK BUTTON */
+
+  submitButton.disabled=true;
+
+  cancelButton.disabled=true;
+
+  confirmButton.disabled=true;
+
+
+  vibrate([40,30,40]);
+
+
+  const candidateId=
+    activeIndex+1;
+
+
+  try{
+
+    /* =========================================
+       SEND TO SUPABASE
+       ========================================= */
+
+    const { error } =
+      await supabaseClient
+        .from("votes")
+        .insert({
+          candidate:candidateId
+        });
+
+
+    /* =========================================
+       CHECK ERROR
+       ========================================= */
+
+    if(error){
+
+      console.error(
+        "Supabase error:",
+        error
+      );
+
+      throw error;
+
+    }
+
+
+    /* =========================================
+       SUCCESS
+       ========================================= */
+
+    closeModal();
+
+    showToast(
+      "✓ Pilihan berhasil disimpan"
+    );
+
+
+    /* =========================================
+       RESET
+       ========================================= */
+
+    setTimeout(()=>{
+
+      carousel.scrollTo({
+        left:0,
+        behavior:"smooth"
+      });
+
+      updateActive();
+
+    },1500);
+
+
+  }catch(error){
+
+    console.error(error);
+
+
+    /* =========================================
+       FAILED
+       ========================================= */
+
+    showToast(
+      "⚠ Gagal menyimpan. Periksa koneksi lalu coba lagi.",
+      true
+    );
+
+
+    /* Modal tetap terbuka supaya
+       siswa bisa mencoba lagi */
+
+  }
+
+
+  /* =========================================
+     UNLOCK UI
+     ========================================= */
+
+  submitting=false;
+
+  submitButton.disabled=false;
+
+  cancelButton.disabled=false;
+
+  confirmButton.disabled=false;
+
 }
 
 </script>
