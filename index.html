@@ -1,4 +1,4 @@
-```html
+html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -464,29 +464,31 @@ header p{
 
     </div>
 
+
     <div class="form-group">
 
-  <label for="phoneInput">
-    Nomor HP
-  </label>
+      <label for="phoneInput">
+        Nomor HP
+      </label>
 
-  <input
-    id="phoneInput"
-    type="tel"
-    placeholder="08xxxxxxxxxx"
-    autocomplete="off"
-  >
+      <input
+        id="phoneInput"
+        type="tel"
+        placeholder="08xxxxxxxxxx"
+        autocomplete="off"
+      >
 
-  <small style="
-    display:block;
-    margin-top:5px;
-    color:#9ca3af;
-    font-size:11px;
-  ">
-    Opsional
-  </small>
+      <small style="
+        display:block;
+        margin-top:5px;
+        color:#ff4a4a;
+        font-size:11px;
+      ">
+        Wajib
+      </small>
 
-</div>
+    </div>
+
 
     <div class="form-group">
 
@@ -556,12 +558,11 @@ header p{
   </header>
 
 
-  <!-- CAROUSEL + ARROWS -->
-
   <div class="carousel-wrapper">
 
     <button
       id="prevButton"
+      type="button"
       class="nav-arrow nav-left"
       onclick="previousCandidate()"
       aria-label="Paslon sebelumnya"
@@ -578,6 +579,7 @@ header p{
 
     <button
       id="nextButton"
+      type="button"
       class="nav-arrow nav-right"
       onclick="nextCandidate()"
       aria-label="Paslon berikutnya"
@@ -690,6 +692,8 @@ let activeIndex = 0;
 let submitting = false;
 
 let verifiedVoterId = null;
+
+let scrollTimer = null;
 
 
 /* =========================================================
@@ -945,7 +949,8 @@ async function verifyVoter(){
     );
 
 
-    updateActive();
+    updateVisuals();
+
 
   }catch(error){
 
@@ -1002,15 +1007,13 @@ candidates.forEach((c,index)=>{
 
 
   /* =========================================
-     TAP CARD
+     TAP / CLICK CARD
   ========================================= */
 
   el.addEventListener(
     "click",
     ()=>{
-
       selectCandidate(index);
-
     }
   );
 
@@ -1034,6 +1037,17 @@ function selectCandidate(index){
   activeIndex=index;
 
 
+  /*
+     UPDATE VISUAL TERLEBIH DAHULU.
+
+     Tidak lagi menjalankan logika
+     "siapa yang paling dekat dengan
+     tengah layar".
+  */
+
+  updateVisuals();
+
+
   const card =
     document.querySelectorAll(
       ".card"
@@ -1050,8 +1064,6 @@ function selectCandidate(index){
 
   }
 
-
-  updateActive();
 
   vibrate(20);
 
@@ -1095,48 +1107,22 @@ function previousCandidate(){
 
 
 /* =========================================================
-   ACTIVE DETECT
+   UPDATE VISUALS
+=========================================================
+
+   FUNGSI INI HANYA MENGIKUTI activeIndex.
+
+   Tidak menghitung posisi card.
+   Tidak mengubah activeIndex.
+
 ========================================================= */
 
-function updateActive(){
+function updateVisuals(){
 
   const cards =
     document.querySelectorAll(
       ".card"
     );
-
-
-  let closest=0;
-
-  let min=Infinity;
-
-
-  cards.forEach((card,i)=>{
-
-    const rect =
-      card.getBoundingClientRect();
-
-
-    const offset =
-      Math.abs(
-        rect.left +
-        rect.width/2 -
-        window.innerWidth/2
-      );
-
-
-    if(offset<min){
-
-      min=offset;
-
-      closest=i;
-
-    }
-
-  });
-
-
-  activeIndex=closest;
 
 
   cards.forEach((c,i)=>{
@@ -1161,8 +1147,6 @@ function updateActive(){
     `PASLON ${activeIndex+1} TERPILIH`;
 
 
-  /* UPDATE ARROW */
-
   document.getElementById(
     "prevButton"
   ).disabled =
@@ -1177,11 +1161,125 @@ function updateActive(){
 }
 
 
+/* =========================================================
+   DETECT SWIPE / MANUAL SCROLL
+=========================================================
+
+   Hanya fungsi ini yang boleh mengubah
+   activeIndex berdasarkan posisi carousel.
+
+========================================================= */
+
+function detectSwipeSelection(){
+
+  const cards =
+    document.querySelectorAll(
+      ".card"
+    );
+
+
+  if(!cards.length) return;
+
+
+  /*
+     Gunakan TENGAH CAROUSEL,
+     bukan tengah WINDOW.
+
+     Ini penting untuk Windows landscape.
+  */
+
+  const carouselRect =
+    carousel.getBoundingClientRect();
+
+
+  const carouselCenter =
+    carouselRect.left +
+    carouselRect.width / 2;
+
+
+  let closestIndex=activeIndex;
+
+  let minDistance=Infinity;
+
+
+  cards.forEach((card,i)=>{
+
+    const rect =
+      card.getBoundingClientRect();
+
+
+    const cardCenter =
+      rect.left +
+      rect.width / 2;
+
+
+    const distance =
+      Math.abs(
+        cardCenter -
+        carouselCenter
+      );
+
+
+    if(distance<minDistance){
+
+      minDistance=distance;
+
+      closestIndex=i;
+
+    }
+
+  });
+
+
+  if(closestIndex!==activeIndex){
+
+    activeIndex=closestIndex;
+
+    updateVisuals();
+
+    vibrate(15);
+
+  }else{
+
+    /*
+       Tetap update visual supaya
+       snap position dan state tetap sinkron.
+    */
+
+    updateVisuals();
+
+  }
+
+}
+
+
+/* =========================================================
+   CAROUSEL SCROLL
+========================================================= */
+
 carousel.addEventListener(
   "scroll",
-  ()=>requestAnimationFrame(
-    updateActive
-  )
+  ()=>{
+
+    /*
+       Tunggu scroll berhenti sebentar.
+
+       Jadi saat user sedang swipe,
+       activeIndex tidak terus-menerus
+       berubah setiap frame.
+    */
+
+    clearTimeout(scrollTimer);
+
+
+    scrollTimer =
+      setTimeout(()=>{
+
+        detectSwipeSelection();
+
+      },120);
+
+  }
 );
 
 
@@ -1345,26 +1443,40 @@ async function submitVote(){
        2. TANDAI VOTER SUDAH MEMILIH
     ========================================= */
 
-    const { error:updateError } =
-      await supabaseClient
-        .from("voters")
-        .update({
-          has_voted:true
-        })
-        .eq("id",verifiedVoterId)
-        .eq("has_voted",false);
+    const { data:updatedVoter, error:updateError } =
+  await supabaseClient
+    .from("voters")
+    .update({
+      has_voted:true
+    })
+    .eq("id",verifiedVoterId)
+    .eq("has_voted",false)
+    .select("id,has_voted");
 
 
-    if(updateError){
+if(updateError){
 
-      console.error(
-        "Voter update error:",
-        updateError
-      );
+  console.error(
+    "Voter update error:",
+    updateError
+  );
 
-      throw updateError;
+  throw updateError;
 
-    }
+}
+
+
+if(!updatedVoter || updatedVoter.length === 0){
+
+  console.error(
+    "Voter tidak berhasil di-update."
+  );
+
+  throw new Error(
+    "Voter update tidak mengubah data."
+  );
+
+}
 
 
     /* =========================================
@@ -1379,22 +1491,46 @@ async function submitVote(){
     );
 
 
-    verifiedVoterId=null;
+    verifiedVoterId = null;
 
+confirmButton.disabled = true;
 
-    confirmButton.disabled=true;
+setTimeout(() => {
 
+  // Sembunyikan voting
+  document.getElementById(
+    "votingArea"
+  ).style.display = "none";
 
-    setTimeout(()=>{
+  // Tampilkan kembali halaman verifikasi
+  document.getElementById(
+    "verification"
+  ).style.display = "flex";
 
-      carousel.scrollTo({
-        left:0,
-        behavior:"smooth"
-      });
+  // Bersihkan input
+  document.getElementById(
+    "nameInput"
+  ).value = "";
 
-      updateActive();
+  document.getElementById(
+    "phoneInput"
+  ).value = "";
 
-    },1500);
+  document.getElementById(
+    "roleInput"
+  ).value = "";
+
+  // Kembalikan pilihan ke paslon pertama
+  activeIndex = 0;
+
+  carousel.scrollTo({
+    left: 0,
+    behavior: "instant"
+  });
+
+  updateActive();
+
+}, 0);
 
 
   }catch(error){
@@ -1438,7 +1574,7 @@ async function submitVote(){
 
 setTimeout(()=>{
 
-  updateActive();
+  updateVisuals();
 
 },100);
 
@@ -1446,4 +1582,3 @@ setTimeout(()=>{
 
 </body>
 </html>
-```
