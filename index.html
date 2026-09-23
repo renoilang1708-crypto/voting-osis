@@ -1494,58 +1494,45 @@ if(!updatedVoter || updatedVoter.length === 0){
 }
 
 
-    /* =========================================
-       SUCCESS
-    ========================================= */
+   /* =========================================
+   SUCCESS
+========================================= */
 
-    closeModal();
+closeModal();
 
+showToast("✓ Pilihan berhasil disimpan");
 
-    showToast(
-      "✓ Pilihan berhasil disimpan"
-    );
+verifiedVoterId = null;
+submitting = false;
 
+// Kembali ke halaman verifikasi
+document.getElementById("votingArea").style.display = "none";
+document.getElementById("verification").style.display = "flex";
 
-    verifiedVoterId = null;
+// Bersihkan input
+nameInput.value = "";
+nisInput.value = "";
+roleInput.value = "";
 
+// Reset pilihan
+activeIndex = 0;
+
+// Reset carousel
+carousel.scrollTo({
+  left: 0,
+  behavior: "instant"
+});
+
+// Reset visual
+updateVisuals();
+
+// Pastikan tombol konfirmasi tidak aktif
 confirmButton.disabled = true;
 
+// Lapis kedua: reload setelah cleanup selesai
 setTimeout(() => {
-
-  // Sembunyikan voting
-  document.getElementById(
-    "votingArea"
-  ).style.display = "none";
-
-  // Tampilkan kembali halaman verifikasi
-  document.getElementById(
-    "verification"
-  ).style.display = "flex";
-
-  // Bersihkan input
-  document.getElementById(
-    "nameInput"
-  ).value = "";
-
-  document.getElementById(
-  "nisInput"
-).value = "";
-
-  document.getElementById(
-    "roleInput"
-  ).value = "";
-
-  // Kembalikan pilihan ke paslon pertama
-  activeIndex = 0;
-
-  carousel.scrollTo({
-    left: 0,
-    behavior: "instant"
-  });
-
-  updateVisuals();
-
-}, 0);
+  window.location.reload();
+}, 300);
 
 
   }catch(error){
